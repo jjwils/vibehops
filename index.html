@@ -159,6 +159,53 @@
             cursor: not-allowed;
         }
 
+        .full-sentence {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .sentence-text {
+            font-size: 1.2em;
+            color: #2c3e50;
+            flex-grow: 1;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .copy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .copy-button:active {
+            transform: translateY(0);
+        }
+
+        .copy-button.copied {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 30px;
@@ -184,6 +231,21 @@
 
             .idea-container {
                 padding: 20px;
+            }
+
+            .full-sentence {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .sentence-text {
+                font-size: 1em;
+                text-align: center;
+            }
+
+            .copy-button {
+                width: 100%;
+                padding: 15px;
             }
         }
     </style>
@@ -212,6 +274,11 @@
             </div>
         </div>
         <button onclick="generateIdea()" id="spinButton">Spin the Slots!</button>
+
+        <div class="full-sentence">
+            <div class="sentence-text" id="fullSentence">Make me a ...</div>
+            <button class="copy-button" id="copyButton" onclick="copyToClipboard()">Copy</button>
+        </div>
     </div>
 
     <script>
@@ -306,6 +373,16 @@
             activeSpins.add(slotId);
             await spinSlot(slotId, contentId, options, 1000);
             activeSpins.delete(slotId);
+            updateFullSentence();
+        }
+
+        function updateFullSentence() {
+            const part1Text = document.getElementById('content1').textContent.toLowerCase();
+            const part2Text = document.getElementById('content2').textContent;
+            const part3Text = document.getElementById('content3').textContent;
+
+            const fullSentence = `Make me ${part1Text} ${part2Text} ${part3Text}`;
+            document.getElementById('fullSentence').textContent = fullSentence;
         }
 
         async function generateIdea() {
@@ -324,6 +401,29 @@
             button.disabled = false;
             button.textContent = 'Spin the Slots!';
             isSpinning = false;
+            updateFullSentence();
+        }
+
+        async function copyToClipboard() {
+            const text = document.getElementById('fullSentence').textContent;
+            const button = document.getElementById('copyButton');
+
+            try {
+                await navigator.clipboard.writeText(text);
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                button.textContent = 'Failed';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            }
         }
 
         // Generate an idea on page load
